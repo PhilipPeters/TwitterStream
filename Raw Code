@@ -21,7 +21,7 @@ REFINED = True
 def clean_up(string):
     new_string = " ".join(list(filter(lambda x:((x[0] != '#') and (x[0] != '@') and (x[-1] != ':') and (x[0:4] != 'http')), string.split())))
     if new_string[-1] != '.':
-        new_string = new_String + '.'
+        new_string = new_string + '.'
     return new_string
 
 
