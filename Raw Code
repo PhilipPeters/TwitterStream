@@ -1,11 +1,12 @@
+""" ENTER YOUR OWN CREDENTIALS refers to the credentials you will receive when you obtain your twitter developers account.
+They are relevant to you, so will be different for different users, so put in your own"""
+
 #Import the necessary methods from tweepy library
 from tweepy.streaming import StreamListener
 from tweepy import OAuthHandler
 from tweepy import Stream
 import sys
 import json
-
-"""ENTER OWN CREDENTIALS refers to credentials that you will obtain yourself when you obtain a twitter developers account, and are personal to you"""
 
 
 #MODE = CONSOLE means content of tweets will be displayed to console
@@ -19,18 +20,18 @@ REFINED = True
 
 #How we refine/cleanup the data
 def clean_up(string):
-    new_string = " ".join(list(filter(lambda x:((x[0] != '#') and (x[0] != '@') and (x[-1] != ':') and (x[0:4] != 'http')), string.split())))
-    if new_string[-1] != '.':
+    new_string = " ".join(list(filter(lambda x:((x[0] != '#') and (x[0] != '@') and ((len(x) >= 1) and x[-1] != ':') and ((len(x) <= 3) or (x[0:4] != 'http')) and ((len(x) <= 1) or x[0:2] != 'RT')), string.split())))
+    if (len(new_string) != 0) and new_string[-1] != '.':
         new_string = new_string + '.'
     return new_string
 
 
 
 #Variables that contains the user credentials to access Twitter API 
-consumer_key= 'ENTER OWN CREDENTIALS'
-consumer_secret= 'ENTER OWN CREDENTIALS'
-access_token= 'ENTER OWN CREDENTIALS'
-access_token_secret= 'ENTER OWN CREDENTIALS'
+consumer_key= 'ENTER YOUR OWN CREDENTIALS'
+consumer_secret= 'ENTER YOUR OWN CREDENTIALS'
+access_token= 'ENTER YOUR OWN CREDENTIALS'
+access_token_secret= 'ENTER YOUR OWN CREDENTIALS'
 
 args = sys.argv
 if len(args)>= 2:
@@ -52,7 +53,10 @@ class StdOutListener(StreamListener):
                 else:
                     print(data["text"])
             if MODE == "FILESAVE":
-                f.write(data["text"])
+                if REFINED:
+                    f.write(clean_up(data["text"]) + u"\n")
+                else:
+                    f.write(data["text"] + u"\n")
         return True
 
     def on_error(self, status):
@@ -65,17 +69,27 @@ if __name__ == '__main__':
         f= open("tweets.txt","w+", encoding='utf-8')
     
     #This handles Twitter authetification and the connection to Twitter Streaming API
-    l = StdOutListener()
-    auth = OAuthHandler(consumer_key, consumer_secret)
-    auth.set_access_token(access_token, access_token_secret)
-    stream = Stream(auth, l)
-
-    #This line filter Twitter Streams to capture data by the keywords: 'python', 'javascript', 'ruby'
-    if args != 0:
-        stream.filter(languages=["en"], track=args)
-    else:
-        stream.filter(languages=["en"], track=["a", "the", "i", "you", "u"])
-
-
+    def exec():
+        
+        try:
+            l = StdOutListener()
+            auth = OAuthHandler(consumer_key, consumer_secret)
+            auth.set_access_token(access_token, access_token_secret)
+            stream = Stream(auth, l)
+         
+        
+            #This line filter Twitter Streams to capture data by the keywords: 'python', 'javascript', 'ruby'
+            if args != 0:
+                stream.filter(languages=["en"], track=args)
+            else:
+                stream.filter(languages=["en"], track=["a", "the", "i", "you", "u"])
+        #except(HTTPError, URLError) as error:
+            #exec()
+        except Exception as e:
+            exec()
+        else:
+            exec()
+    exec()
+    
     if MODE == "FILESAVE":
         f.close()
